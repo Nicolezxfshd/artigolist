@@ -1,9 +1,10 @@
+// src/components/Lista.tsx
 'use client';
 
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
-import { FiHeart, FiArrowRight, FiUser, FiEye } from 'react-icons/fi';
+import { FiHeart, FiArrowRight, FiUser, FiEye } from 'react-icons/fi'; // Removi o FiMessageSquare que não era usado
 import Link from 'next/link';
 import { Artigo } from '@/lib/artigos';
 
@@ -60,7 +61,7 @@ const Lista = ({ artigos }: Props) => {
                   <FiUser className="meta-icon" /> {artigo.author}
                 </span>
                 <span className="artigo-visualizacoes">
-                  <FiEye className="meta-icon" /> {artigo.views.toLocaleString()} visualizações
+                  <FiEye className="meta-icon" /> {artigo.views?.toLocaleString() || '0'} visualizações
                 </span>
               </div>
 
@@ -91,3 +92,4 @@ const Lista = ({ artigos }: Props) => {
 };
 
 export default Lista;
+
