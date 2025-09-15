@@ -90,3 +90,4 @@ const Lista = ({ artigos }: Props) => {
 };
 
 export default Lista;
+
