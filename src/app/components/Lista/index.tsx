@@ -1,195 +1,92 @@
-// src/app/artigo/[id]/page.tsx
-import { notFound } from 'next/navigation';
-import { artigos } from '@/lib/artigos';
+'use client';
+
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { FiUser, FiEye, FiHeart } from 'react-icons/fi';
-import './styles.css';
+import { useState } from 'react';
+import { FiHeart, FiArrowRight, FiUser, FiEye } from 'react-icons/fi'; // removido FiMessageSquare
+import Link from 'next/link';
+import { Artigo } from '@/lib/artigos';
 
-interface Params {
-  id: string;
-}
+type Props = {
+  artigos: Artigo[];
+};
 
-interface Props {
-  params: Params;
-}
+const getRandomCategory = () => {
+  const categories = ['Tecnologia', 'Programação', 'Design', 'Negócios', 'Produtividade'];
+  return categories[Math.floor(Math.random() * categories.length)];
+};
 
-export default function ArtigoPage({ params }: Props) {
-  const artigo = artigos.find((a) => a.id.toString() === params.id);
+const Lista = ({ artigos }: Props) => {
+  const [likes, setLikes] = useState<{ [key: number]: number }>({});
+  const [liked, setLiked] = useState<{ [key: number]: boolean }>({});
 
-  if (!artigo) {
-    notFound();
-  }
+  const handleLike = (id: number, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const formattedDate = artigo.date
-    ? format(new Date(artigo.date), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
-    : '';
+    setLikes((prev) => ({
+      ...prev,
+      [id]: (prev[id] || 0) + (liked[id] ? -1 : 1),
+    }));
 
-  return (
-    <main className="artigo-detalhe">
-      <div className="artigo-container">
-        <div className="artigo-header">
-          <span className="artigo-categoria">{artigo.category}</span>
-          <span className="artigo-data">{formattedDate}</span>
-        </div>
-
-        <h1 className="artigo-titulo">{artigo.title}</h1>
-
-        <div className="artigo-meta">
-          <div className="artigo-autor">
-            <FiUser className="meta-icon" />
-            <span>{artigo.author}</span>
-          </div>
-          <div className="artigo-visualizacoes">
-            <FiEye className="meta-icon" />
-            <span>{artigo.views?.toLocaleString() || '0'} visualizações</span>
-          </div>
-          <div className="artigo-curtidas">
-            <FiHeart className="meta-icon" />
-            <span>{artigo.likes?.toLocaleString() || '0'} curtidas</span>
-          </div>
-        </div>
-
-        <div className="artigo-conteudo">
-          <p className="artigo-descricao">{artigo.description}</p>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-export async function generateStaticParams() {
-  return artigos.map((artigo) => ({
-    id: artigo.id.toString(),
-  }));
-}
-// src/app/artigo/[id]/page.tsx
-import { notFound } from 'next/navigation';
-import { artigos } from '@/lib/artigos';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { FiUser, FiEye, FiHeart } from 'react-icons/fi';
-import './styles.css';
-
-interface Params {
-  id: string;
-}
-
-interface Props {
-  params: Params;
-}
-
-export default function ArtigoPage({ params }: Props) {
-  const artigo = artigos.find((a) => a.id.toString() === params.id);
-
-  if (!artigo) {
-    notFound();
-  }
-
-  const formattedDate = artigo.date
-    ? format(new Date(artigo.date), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
-    : '';
+    setLiked((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
-    <main className="artigo-detalhe">
-      <div className="artigo-container">
-        <div className="artigo-header">
-          <span className="artigo-categoria">{artigo.category}</span>
-          <span className="artigo-data">{formattedDate}</span>
-        </div>
+    <>
+      {artigos.map((artigo) => {
+        const category = artigo.category || getRandomCategory();
+        const articleDate = artigo.date ? new Date(artigo.date) : new Date();
+        const formattedDate = format(articleDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR });
+        const likeCount = (artigo.likes || 0) + (likes[artigo.id] || 0);
+        const isLiked = liked[artigo.id] || false;
 
-        <h1 className="artigo-titulo">{artigo.title}</h1>
+        return (
+          <div key={artigo.id} className="article-card">
+            <article className="artigo">
+              <div className="artigo-header">
+                <span className="artigo-category">{category}</span>
+                <span className="artigo-date">{formattedDate}</span>
+              </div>
 
-        <div className="artigo-meta">
-          <div className="artigo-autor">
-            <FiUser className="meta-icon" />
-            <span>{artigo.author}</span>
-          </div>
-          <div className="artigo-visualizacoes">
-            <FiEye className="meta-icon" />
-            <span>{artigo.views?.toLocaleString() || '0'} visualizações</span>
-          </div>
-          <div className="artigo-curtidas">
-            <FiHeart className="meta-icon" />
-            <span>{artigo.likes?.toLocaleString() || '0'} curtidas</span>
-          </div>
-        </div>
+              <h2 className="artigo-titulo">{artigo.title}</h2>
 
-        <div className="artigo-conteudo">
-          <p className="artigo-descricao">{artigo.description}</p>
-        </div>
-      </div>
-    </main>
+              <div className="artigo-meta">
+                <span className="artigo-autor">
+                  <FiUser className="meta-icon" /> {artigo.author}
+                </span>
+                <span className="artigo-visualizacoes">
+                  <FiEye className="meta-icon" /> {artigo.views?.toLocaleString() || '0'} visualizações
+                </span>
+              </div>
+
+              <p className="artigo-descricao">{artigo.description}</p>
+
+              <div className="artigo-footer">
+                <div className="artigo-actions">
+                  <button
+                    className={`like-button ${isLiked ? 'liked' : ''}`}
+                    onClick={(e) => handleLike(artigo.id, e)}
+                    aria-label={isLiked ? 'Remover curtida' : 'Curtir'}
+                  >
+                    <FiHeart className={isLiked ? 'filled' : ''} />
+                    <span>{likeCount}</span>
+                  </button>
+                </div>
+
+                <Link href={`/artigo/${artigo.id}`} className="btn-ler-artigo">
+                  Acessar <FiArrowRight className="arrow-icon" />
+                </Link>
+              </div>
+            </article>
+          </div>
+        );
+      })}
+    </>
   );
-}
+};
 
-export async function generateStaticParams() {
-  return artigos.map((artigo) => ({
-    id: artigo.id.toString(),
-  }));
-}
-// src/app/artigo/[id]/page.tsx
-import { notFound } from 'next/navigation';
-import { artigos } from '@/lib/artigos';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { FiUser, FiEye, FiHeart } from 'react-icons/fi';
-import './styles.css';
-
-interface Params {
-  id: string;
-}
-
-interface Props {
-  params: Params;
-}
-
-export default function ArtigoPage({ params }: Props) {
-  const artigo = artigos.find((a) => a.id.toString() === params.id);
-
-  if (!artigo) {
-    notFound();
-  }
-
-  const formattedDate = artigo.date
-    ? format(new Date(artigo.date), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
-    : '';
-
-  return (
-    <main className="artigo-detalhe">
-      <div className="artigo-container">
-        <div className="artigo-header">
-          <span className="artigo-categoria">{artigo.category}</span>
-          <span className="artigo-data">{formattedDate}</span>
-        </div>
-
-        <h1 className="artigo-titulo">{artigo.title}</h1>
-
-        <div className="artigo-meta">
-          <div className="artigo-autor">
-            <FiUser className="meta-icon" />
-            <span>{artigo.author}</span>
-          </div>
-          <div className="artigo-visualizacoes">
-            <FiEye className="meta-icon" />
-            <span>{artigo.views?.toLocaleString() || '0'} visualizações</span>
-          </div>
-          <div className="artigo-curtidas">
-            <FiHeart className="meta-icon" />
-            <span>{artigo.likes?.toLocaleString() || '0'} curtidas</span>
-          </div>
-        </div>
-
-        <div className="artigo-conteudo">
-          <p className="artigo-descricao">{artigo.description}</p>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-export async function generateStaticParams() {
-  return artigos.map((artigo) => ({
-    id: artigo.id.toString(),
-  }));
-}
+export default Lista;
